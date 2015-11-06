@@ -229,7 +229,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     fstab.qcom \
     init.mmi.boot.sh \
-    init.mmi.radio.sh \
     init.mmi.rc \
     init.mmi.touch.sh \
     init.mmi.usb.rc \

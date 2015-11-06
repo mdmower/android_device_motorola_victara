@@ -111,7 +111,6 @@
 /dev/msm_vidc_enc         0660   system     audio
 /dev/msm_rotator          0660   system     system
 /dev/hw_random            0600   root       root
-/dev/adsprpc-smd          0660   media      camera
 
 #permissions for audio
 /dev/msm_qcelp            0660   system     audio
@@ -137,7 +136,6 @@
 /dev/msm_preproc_ctl      0660   system     audio
 /dev/msm_rtac             0660   system     audio
 /dev/msm_voicememo        0660   system     audio
-/dev/radio0               0640   fm_radio   fm_radio
 /dev/smd3                 0660   bluetooth  net_bt_stack
 /dev/smd2                 0660   bluetooth  net_bt_stack
 /dev/ttyHSL1              0660   system     system
@@ -203,9 +201,6 @@
 # HOB
 /dev/mot_hob_ram          0660   radio      radio
 
-# ACDB
-/dev/msm_acdb             0660   system     audio
-
 # MOT CAMERA
 /dev/motcamera0           0660   camera     camera
 
@@ -217,7 +212,6 @@
 /dev/i2c-5                0660   root       system
 
 # SECURITY
-/dev/qseecom              0660   system     drmrpc
 /dev/sec                  0660   system     drmrpc
 
 # AK8963 Magnetometer
@@ -248,9 +242,6 @@
 /dev/stml0xx               0660  system     compass
 /dev/stml0xx_as            0660  compass    compass
 /dev/stml0xx_ms            0660  compass    compass
-
-# Validity Sensor
-/dev/vfsspi               0660  fingerp    fingerp
 
 # DTV
 /dev/isdbt                0660  system     system

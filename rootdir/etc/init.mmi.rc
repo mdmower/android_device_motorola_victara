@@ -27,8 +27,6 @@ on moto-charger
     start charge_only_mode
 
 on init
-    copy /module_hashes /sys/kernel/module_whitelist
-
     # Configure coredump
     write /proc/sys/kernel/core_pattern "|/system/bin/coredump %e %p %t"
     write /proc/self/coredump_filter "0x7f"
@@ -37,32 +35,13 @@ on init
     chown root diag /sys/kernel/dropbox/event
     chown root diag /sys/kernel/dropbox/data
 
-    # ESDFS
-    chown mot_esdfs root /proc/fs/esdfs/packages
-
 on post-fs-data
     # Trigger the defuse tool
     setprop installd.post_fs_data_ready 1
 
-    # Permissions for Factory Test of Charging Paths
-    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_auto_enable
-    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_ibatt
-    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_itrick
-    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_iusb
-    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_usb_suspend
-    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_fail_clear
-    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_usb_otg_ctl
-
-   # Setup correct permissions for dbvc and atvc
+    # Setup correct permissions for dbvc and atvc
     mkdir /data/local/dbvc 0750 mot_tcmd shell
     mkdir /data/local/atvc 0775 mot_tcmd shell
-
-   # Create moodle directory that MOODLE APP can write to
-    mkdir /data/local/moodle 0770 graphics mot_tcmd
-
-    # Setup folders for diag_mdlog
-    mkdir /data/diag_mdlog 0750 system log
-    mkdir /data/diag_mdlog/logs 0750 log log
 
     # Setup folder for native to transfer data to NativeDropBoxAgent
     mkdir /data/system/dropbox-add 0730 system diag
@@ -70,7 +49,7 @@ on post-fs-data
     # Setup folder for camera HAL subsystem
     mkdir /data/camera_dump 0750 media media
 
-    #Subsystem RAM-dumps
+    # Subsystem RAM-dumps
     mkdir /data/ss-ram-dumps 0750 radio log
     mkdir /data/ss-ram-dumps/bp-dumps 0750 radio log
     mkdir /data/ss-ram-dumps/riva-dumps 0750 radio log
@@ -78,7 +57,7 @@ on post-fs-data
     # Create directory for cutback
     mkdir /data/misc/cutback 0770 radio wifi
 
-    #setup folder for WLAN WAPI
+    # Setup folder for WLAN WAPI
     mkdir /data/wapi_certificate 0750 system wifi
     chown system wifi /data/wapi_certificate
 
@@ -99,11 +78,6 @@ on post-fs
     write /proc/sys/vm/page-cluster 0
     write /proc/sys/vm/swappiness 100
 
-# To report kernel panic
-service apanic_annotate  /system/bin/sh /system/bin/apanic_annotate.sh build
-    class late_start
-    group log
-    oneshot
 
 service charge_only_mode /system/bin/charge_only_mode
     user root
@@ -124,7 +98,7 @@ service thermal-com /system/bin/thermal-engine --minimode
     user root
     disabled
 
-#start Sensor daemon
+# Start sensor daemon
 service stm401 /system/bin/stm401 boot
     disabled
     user compass
@@ -138,12 +112,6 @@ on boot
     # Change ownership and permission for vibrator
     chown system system /sys/class/timed_output/vibrator/enable
     chmod 0660 /sys/class/timed_output/vibrator/enable
-
-    # initialize kernel dynamic debugging settings
-    copy /system/etc/debug_control.conf /sys/kernel/debug/dynamic_debug/control
-
-    # Setup folder for aplogd
-    mkdir /data/aplogd 0750 log log
 
     # Change the ownership of display TE files for tcmds
     chown root mot_tcmd /sys/class/graphics/fb0/te_enable
@@ -231,90 +199,6 @@ service adspd /system/bin/adspd /dev/ttyHS3
     user audio
     group audio input diag
 
-service ftmipcd /system/bin/ftmipcd
-    user radio
-    group radio inet qcom_diag
-    disabled
-    oneshot
-
-on property:ro.bootmode=mot-factory
-    start ftmipcd
-
-# Power up to suspend
-on property:tcmd.suspend=1
-    stop surfaceflinger
-    stop zygote
-    setprop debug.sf.nobootanimation 1
-
-# Normal to suspend
-on property:tcmd.suspend=2
-    stop surfaceflinger
-    stop zygote
-    setprop debug.sf.nobootanimation 1
-
-service tcmd /system/bin/tcmd
-    class core
-    group mot_tcmd radio mot_pwric input system log camera graphics mot_accy sdcard_r sdcard_rw audio inet bluetooth wifi compass net_bt_admin mot_tombstone mot_tpapi mount net_raw net_admin media shell mot_usb nfc fm_radio qcom_diag mot_dbvc cache media_rw
-    socket local_tcmd stream 0660 mot_tcmd mot_tcmd
-    socket batch_socket stream 0600 mot_tcmd mot_tcmd
-    oneshot
-    disabled
-
-service tcmdhelp /system/bin/tcmdhelp
-    class main
-    socket tcmdhelp stream 0600 mot_tcmd mot_tcmd
-    oneshot
-    disabled
-
-on property:tcmd.start_tcmdhelp=1
-    start tcmdhelp
-
-on property:persist.mot.demo_mode_charging=1
-    write /sys/class/power_supply/battery/device/force_demo_mode 1
-
-on property:persist.log.aplogd.enable=1
-    start aplogd
-
-on property:persist.log.aplogd.enable=0
-    stop aplogd
-
-service aplogd /system/bin/aplogd
-    class main
-    #user log
-    #group log system sdcard_rw sdcard_r media_rw mount
-    # The user and group definitions above are intentionally disabled and left
-    # only as documentation. It actually starts as root and immediately drops
-    # to log plus those groups after preserving CAP_SYS_ADMIN, which is required
-    # for kernel logging.
-    disabled
-
-service mmi-radio-sh /system/bin/sh /init.mmi.radio.sh
-    class core
-    user radio
-    group radio
-    oneshot
-
-on property:persist.sys.diag_mdlog.on=1
-    start diag_mdlog
-
-on property:persist.sys.diag_mdlog.on=0
-    stop diag_mdlog
-
-on property:log.diag_mdlog.invld_mode_stop=1
-    stop diag_mdlog
-
-service diag_mdlog /system/bin/diag_mdlog-wrap
-    class main
-    socket mdlog_cmd stream 0660 system diag
-    user log
-    group log sdcard_rw sdcard_r media_rw qcom_diag
-    disabled
-
-service dropboxd /system/bin/dropboxd
-    class late_start
-    user diag
-    group diag
-
 on property:sys.boot_completed=1
     setprop sys.io.scheduler bfq
 
@@ -350,23 +234,6 @@ service hw_revs /system/bin/sh /system/bin/hardware_revisions.sh
     group system
     oneshot
 
-service mbm_spy /system/bin/mbm_spy
-    class late_start
-    user system
-    group system
-    oneshot
-
-# DHCP service for Ethernet
-service dhcpcd_eth0 /system/bin/dhcpcd -G
-   class late_start
-   disabled
-   oneshot
-
-service iprenew_eth0 /system/bin/dhcpcd -nBK
-   class late_start
-   disabled
-   oneshot
-
 service atvc_core /system/bin/dbvc_atvc_property_set
    class core
    seclabel u:r:atvc:s0
@@ -380,44 +247,3 @@ service atvc /system/bin/dbvc_atvc_property_set
    user mot_atvc
    group mot_tpapi
    oneshot
-
-service qe /xbin/qe /system
-   class main
-   seclabel u:r:qe:s0
-   oneshot
-   disabled
-
-service qe_broadcast /xbin/qe /system -b
-   class main
-   seclabel u:r:qe:s0
-   oneshot
-   disabled
-
-on property:persist.qe.trigger=1
-   start qe_broadcast
-
-service ss_rdump /system/bin/subsystem_ramdump 1 0
-   class late_start
-   user radio
-   group log sdcard_rw sdcard_r diag
-
-on property:persist.sys.qc.sub.rdump.on=*
-   write /sys/module/subsystem_restart/parameters/enable_ramdumps ${persist.sys.qc.sub.rdump.on}
-
-service esdpll /system/bin/esdpll -w
-    user mot_esdfs
-    group mot_esdfs package_info
-    disabled
-
-on property:ro.esdfs_sdcard=true
-    wait /data/media/0 600
-    mount esdfs /data/media /mnt/shell/emulated derive=legacy
-    mount none /mnt/shell/emulated/0 /storage/emulated/legacy bind
-    start esdpll
-
-# This will make sure that sdcard is bound as late_start.
-on nonencrypted
-    setprop ro.esdfs_sdcard ${persist.esdfs_sdcard}
-
-on property:vold.decrypt=trigger_restart_framework
-    setprop ro.esdfs_sdcard ${persist.esdfs_sdcard}
