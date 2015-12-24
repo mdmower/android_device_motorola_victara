@@ -138,6 +138,7 @@ include device/qcom/sepolicy/sepolicy.mk
 BOARD_SEPOLICY_DIRS += device/motorola/victara/sepolicy
 
 # TWRP
+RECOVERY_VARIANT := twrp
 BOARD_HAS_NO_REAL_SDCARD := true
 BOARD_SUPPRESS_SECURE_ERASE := true
 TW_THEME := portrait_hdpi
