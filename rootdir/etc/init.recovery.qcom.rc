@@ -38,6 +38,21 @@ on enable-low-power
 on property:init.svc.recovery=running
     trigger enable-low-power
 
+on property:ro.twrp.boot=1
+    mkdir /vendor
+    mkdir /vendor/firmware
+    mkdir /vendor/firmware/keymaster
+    symlink /firmware/image/keymaster.b00 /vendor/firmware/keymaster/keymaster.b00
+    symlink /firmware/image/keymaster.b01 /vendor/firmware/keymaster/keymaster.b01
+    symlink /firmware/image/keymaster.b02 /vendor/firmware/keymaster/keymaster.b02
+    symlink /firmware/image/keymaster.b03 /vendor/firmware/keymaster/keymaster.b03
+    symlink /firmware/image/keymaster.mdt /vendor/firmware/keymaster/keymaster.mdt
+    symlink /firmware/image/cmnlib.b00 /vendor/firmware/cmnlib.b00
+    symlink /firmware/image/cmnlib.b01 /vendor/firmware/cmnlib.b01
+    symlink /firmware/image/cmnlib.b02 /vendor/firmware/cmnlib.b02
+    symlink /firmware/image/cmnlib.b03 /vendor/firmware/cmnlib.b03
+    symlink /firmware/image/cmnlib.mdt /vendor/firmware/cmnlib.mdt
+
 on property:recovery.perf.mode=0
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
