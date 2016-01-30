@@ -136,6 +136,15 @@ BOARD_PROVIDES_RILD := true
 include device/qcom/sepolicy/sepolicy.mk
 BOARD_SEPOLICY_DIRS += device/motorola/victara/sepolicy
 
+# TWRP
+BOARD_HAS_NO_REAL_SDCARD := true
+RECOVERY_SDCARD_ON_DATA := true
+RECOVERY_VARIANT := twrp
+TW_INCLUDE_CRYPTO := true
+TW_NO_USB_STORAGE := true
+TW_TARGET_USES_QCOM_BSP := true
+TW_THEME := portrait_hdpi
+
 # Vendor Init
 TARGET_UNIFIED_DEVICE := true
 TARGET_INIT_VENDOR_LIB := libinit_victara
